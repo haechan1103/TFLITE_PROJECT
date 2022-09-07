@@ -30,6 +30,9 @@ public sealed class BlazePoseSample : MonoBehaviour
     private Vector4[] landmarks;
 
     private bool can_state;
+
+    private bool r_state;
+    private bool l_state;
     private UniTask<bool> task;
     private CancellationToken cancellationToken;
 
@@ -67,15 +70,9 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
     }
 
-    //drawer.DrawPoseResult(poseResult);
+    
 
-    //drawer.DrawCropMatrix(pose.CropMatrix);
-    //drawer.DrawLandmarkResult(landmarkResult, visibilityThreshold, canvas.planeDistance);
-
-    // if (options.landmark.useWorldLandmarks)
-    // {
-    //     drawer.DrawWorldLandmarks(landmarkResult, visibilityThreshold);
-    // }
+    
     private void Update()
     {
         if (landmarkResult != null && landmarkResult.score > 0.2f)
@@ -141,33 +138,39 @@ public sealed class BlazePoseSample : MonoBehaviour
         return landmarkResult != null;
     }
 
-    private void stop_check()
+    // 운동 시간 종료시 함수 실행
+    private void stop_check() 
     {
         can_state = false;
-        
     }
 
+    // 첫번째 운동 스타트 체크
     private void can_check_1(Vector4[] marks)
     {
         float l_gap, r_gap, gap;
 
-        gap = (marks[12].x - marks[11].x)/2;
-        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x - gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
-        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x - gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
+        gap = (marks[12].x - marks[11].x)/3;
+        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x + gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
+        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x + gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
         {
+            Debug.Log("x값 맞음");
             l_gap = (marks[11].y - marks[13].y)*2/3;
             r_gap = (marks[12].y - marks[14].y)*2/3;
             if(l_gap > 0 && r_gap > 0)
             {
-                if(marks[13].y < marks[15].y - l_gap && marks[14].y < marks[16].y - r_gap)
+                if(marks[15].y < marks[13].y - l_gap && marks[16].y < marks[14].y - r_gap)
                 {
+                    r_state = false;
+                    l_state = false;
                     can_state = true;
                     Debug.Log("조건 성공 활성화");
-                    Gamemanage.GetComponent<GameManage>().Start_timer(6 , 0.0f);
+                    Gamemanage.GetComponent<GameManage>().Start_timer(3 , 5.0f);
                 }
             }
         } 
     }
+
+    // 첫번째 운동 움직임 체크
     private void check_move_1(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
@@ -176,12 +179,20 @@ public sealed class BlazePoseSample : MonoBehaviour
         {
             if(!GameManage.is_time)
             {
-                GameManage.Now_EX_State++;
                 can_state = false;
                 Gamemanage.GetComponent<GameManage>().Pause_timer();
             }
+
+            if(GameManage.minute < 3)
+            {
+                GameManage.Now_EX_State++;
+                can_state = false;
+                GameManage.minute = 3;
+                GameManage.second = 0.0f;
+                Gamemanage.GetComponent<GameManage>().Pause_timer();
+            }
+
             float r_gap, l_gap;
-            bool r_state = false, l_state = false;
 
             landmarks = result.viewportLandmarks;
             
@@ -237,23 +248,28 @@ public sealed class BlazePoseSample : MonoBehaviour
         else
         {
             can_check_1(landmarks);
+            Debug.Log(landmarks[10].x);
         }
     }
 
+    // 두번째 운동 스타트 체크
     private void can_check_2(Vector4[] marks)
     {
-        float l_gap, r_gap, gap;
+       float l_gap, r_gap, gap;
 
-        gap = (marks[12].x - marks[11].x)/2;
-        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x - gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
-        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x - gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
+        gap = (marks[12].x - marks[11].x)/3;
+        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x + gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
+        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x + gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
         {
+            Debug.Log("x값 맞음");
             l_gap = (marks[11].y - marks[13].y)*2/3;
             r_gap = (marks[12].y - marks[14].y)*2/3;
             if(l_gap > 0 && r_gap > 0)
             {
-                if(marks[13].y < marks[15].y - l_gap && marks[14].y < marks[16].y - r_gap)
+                if(marks[15].y < marks[13].y - l_gap && marks[16].y < marks[14].y - r_gap)
                 {
+                    r_state = false;
+                    l_state = false;
                     can_state = true;
                     Debug.Log("조건 성공 활성화");
                     Gamemanage.GetComponent<GameManage>().Restart_timer();
@@ -261,6 +277,8 @@ public sealed class BlazePoseSample : MonoBehaviour
             }
         } 
     }
+    
+    // 두번째 운동 움직임 체크
     private void check_move_2(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
@@ -271,63 +289,62 @@ public sealed class BlazePoseSample : MonoBehaviour
             {
                 stop_check();
             }
-            float r_gap, l_gap;
-            bool r_state = false, l_state = false;
 
-            landmarks = result.viewportLandmarks;
-            
-            r_gap = landmarks[12].y - landmarks[14].y;
-            l_gap = landmarks[11].y - landmarks[13].y;
-            
             Vector3 r_arm = landmarks[14];
             Vector3 r_hand = landmarks[16];
-            
+            Vector3 r_sholder = landmarks[12];
             Vector3 l_arm = landmarks[13];
             Vector3 l_hand = landmarks[15];
+            Vector3 l_sholder = landmarks[11];
 
-            if(r_gap > 0)
-                if(r_hand.y < r_arm.y - r_gap/3*2)
+            float r_gap = r_arm.y - r_sholder.y;
+            float l_gap = l_arm.y - l_sholder.y;
+
+            if(r_state)
+            {
+                if(r_arm.y < r_sholder.y*2 - landmarks[10].y)
                 {
-                    if(r_state == true)
-                    {
-                        r_state = false;
-                        GameManage.r_count++;
-                        Debug.Log("오른손 다운");
-                    }
+                    Debug.Log("팔 내림");
+                    r_state = false;
                 }
-                else if(r_hand.y > r_arm.y + r_gap/2)
+            }
+            else
+            {
+                if(landmarks[10].y < r_arm.y)
                 {
-                    if(r_state == false)
+                    if(r_hand.y> r_arm.y + r_gap*2/3)
                     {
                         r_state = true;
-                        Debug.Log("오른손 업");
+                        Debug.Log("팔 들어올림");
+                        GameManage.r_count++;
                     }
                 }
-
-            if(l_gap > 0)
+            }
+            
+            if(l_state)
             {
-                if(l_hand.y < l_arm.y - l_gap/3*2)
+                if(l_arm.y < l_sholder.y*2 - landmarks[9].y)
                 {
-                    if(l_state == true)
-                    {
-                        l_state = false;
-                        GameManage.l_count++;
-                        Debug.Log("왼손 다운");
-                    }
+                    Debug.Log("팔 내림");
+                    l_state = false;
                 }
-                else if(l_hand.y > l_arm.y + l_gap/2)
+            }
+            else
+            {
+                if(landmarks[9].y < l_arm.y)
                 {
-                    if(l_state == false)
+                    if(l_hand.y> l_arm.y + l_gap*2/3)
                     {
                         l_state = true;
-                        Debug.Log("왼손 업");
+                        Debug.Log("팔 들어올림");
+                        GameManage.l_count++;
                     }
                 }
             }
         }
         else
         {
-            can_check_1(landmarks);
+            can_check_2(landmarks);
         }
     }
     private void check_move_3(PoseLandmarkDetect.Result result)

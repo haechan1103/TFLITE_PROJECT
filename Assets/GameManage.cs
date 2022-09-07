@@ -24,8 +24,8 @@ public class GameManage : MonoBehaviour
 
     public Text timeText;
 
-    private float minute;
-    private float second;
+    public static float minute;
+    public static float second;
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +33,7 @@ public class GameManage : MonoBehaviour
         can_check = true;
         l_count = r_count = 0;
         Start_timer(0,20.0f);
+        Now_EX_State = 1;
     }
 
     // Update is called once per fram
@@ -88,10 +89,12 @@ public class GameManage : MonoBehaviour
     {
         is_time = false;
         Debug.Log("타이머 일시정지!");
+        timeText.text = minute.ToString() + ":" + ((int)second).ToString();
     }
 
     public void Restart_timer()
     {
-        
+        is_time = true;
+        Debug.Log("타이머 재개");   
     }
 }
