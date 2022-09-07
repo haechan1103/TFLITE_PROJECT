@@ -276,27 +276,27 @@ public sealed class BlazePoseSample : MonoBehaviour
     }
     private void check_move_3(PoseLandmarkDetect.Result result)
     {
-        
+        landmarks = result.viewportLandmarks;
     }
     private void check_move_4(PoseLandmarkDetect.Result result)
     {
-        
+        landmarks = result.viewportLandmarks;
     }
     private void check_move_5(PoseLandmarkDetect.Result result)
     {
-        
+        landmarks = result.viewportLandmarks;
     }
     private void check_move_6(PoseLandmarkDetect.Result result)
     {
-        
+        landmarks = result.viewportLandmarks;
     }
     private void check_move_7(PoseLandmarkDetect.Result result)
     {
-        
+        landmarks = result.viewportLandmarks;
     }
     private void check_move_8(PoseLandmarkDetect.Result result)
     {
-        
+        landmarks = result.viewportLandmarks;
     }
     private void stop_check()
     {
