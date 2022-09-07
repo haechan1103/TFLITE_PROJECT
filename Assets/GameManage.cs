@@ -83,4 +83,15 @@ public class GameManage : MonoBehaviour
         is_time = false;
         timeText.text = minute.ToString() + ":" + ((int)second).ToString();
     }
+
+    public void Pause_timer()
+    {
+        is_time = false;
+        Debug.Log("타이머 일시정지!");
+    }
+
+    public void Restart_timer()
+    {
+        
+    }
 }

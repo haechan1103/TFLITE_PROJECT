@@ -67,20 +67,48 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
     }
 
+    //drawer.DrawPoseResult(poseResult);
+
+    //drawer.DrawCropMatrix(pose.CropMatrix);
+    //drawer.DrawLandmarkResult(landmarkResult, visibilityThreshold, canvas.planeDistance);
+
+    // if (options.landmark.useWorldLandmarks)
+    // {
+    //     drawer.DrawWorldLandmarks(landmarkResult, visibilityThreshold);
+    // }
     private void Update()
     {
-        //drawer.DrawPoseResult(poseResult);
-
         if (landmarkResult != null && landmarkResult.score > 0.2f)
         {
-            //drawer.DrawCropMatrix(pose.CropMatrix);
-            //drawer.DrawLandmarkResult(landmarkResult, visibilityThreshold, canvas.planeDistance);
-
-            // if (options.landmark.useWorldLandmarks)
-            // {
-            //     drawer.DrawWorldLandmarks(landmarkResult, visibilityThreshold);
-            // }
-            check_move_1(landmarkResult);
+            switch(GameManage.Now_EX_State)
+            {
+                case 1:
+                    check_move_1(landmarkResult);
+                    break;
+                case 2:
+                    check_move_2(landmarkResult);
+                    break;
+                case 3:
+                    check_move_3(landmarkResult);
+                    break;
+                case 4:
+                    check_move_4(landmarkResult);
+                    break;
+                case 5:
+                    check_move_5(landmarkResult);
+                    break;
+                case 6:
+                    check_move_6(landmarkResult);
+                    break;
+                case 7:
+                    check_move_7(landmarkResult);
+                    break;
+                case 8:
+                    check_move_8(landmarkResult);
+                    break;
+                
+            }
+            
         }
     }
 
@@ -113,6 +141,12 @@ public sealed class BlazePoseSample : MonoBehaviour
         return landmarkResult != null;
     }
 
+    private void stop_check()
+    {
+        can_state = false;
+        
+    }
+
     private void can_check_1(Vector4[] marks)
     {
         float l_gap, r_gap, gap;
@@ -142,7 +176,9 @@ public sealed class BlazePoseSample : MonoBehaviour
         {
             if(!GameManage.is_time)
             {
-                stop_check();
+                GameManage.Now_EX_State++;
+                can_state = false;
+                Gamemanage.GetComponent<GameManage>().Pause_timer();
             }
             float r_gap, l_gap;
             bool r_state = false, l_state = false;
@@ -204,7 +240,27 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
     }
 
-    
+    private void can_check_2(Vector4[] marks)
+    {
+        float l_gap, r_gap, gap;
+
+        gap = (marks[12].x - marks[11].x)/2;
+        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x - gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
+        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x - gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
+        {
+            l_gap = (marks[11].y - marks[13].y)*2/3;
+            r_gap = (marks[12].y - marks[14].y)*2/3;
+            if(l_gap > 0 && r_gap > 0)
+            {
+                if(marks[13].y < marks[15].y - l_gap && marks[14].y < marks[16].y - r_gap)
+                {
+                    can_state = true;
+                    Debug.Log("조건 성공 활성화");
+                    Gamemanage.GetComponent<GameManage>().Restart_timer();
+                }
+            }
+        } 
+    }
     private void check_move_2(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
@@ -297,9 +353,5 @@ public sealed class BlazePoseSample : MonoBehaviour
     private void check_move_8(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
-    }
-    private void stop_check()
-    {
-        can_state = false;
     }
 }
