@@ -142,6 +142,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     private void stop_check() 
     {
         can_state = false;
+        GameManage.Now_EX_State = 0;
     }
 
     // 첫번째 운동 스타트 체크
@@ -164,7 +165,7 @@ public sealed class BlazePoseSample : MonoBehaviour
                     l_state = false;
                     can_state = true;
                     Debug.Log("조건 성공 활성화");
-                    Gamemanage.GetComponent<GameManage>().Start_timer(3 , 5.0f);
+                    Gamemanage.GetComponent<GameManage>().Start_timer(3 , 30.0f);
                 }
             }
         } 
@@ -235,7 +236,7 @@ public sealed class BlazePoseSample : MonoBehaviour
                         Debug.Log("왼손 다운");
                     }
                 }
-                else if(l_hand.y > l_arm.y + l_gap/2)
+                else if(l_hand.y > l_arm.y + l_gap/3*2)
                 {
                     if(l_state == false)
                     {
@@ -293,6 +294,7 @@ public sealed class BlazePoseSample : MonoBehaviour
             Vector3 r_arm = landmarks[14];
             Vector3 r_hand = landmarks[16];
             Vector3 r_sholder = landmarks[12];
+
             Vector3 l_arm = landmarks[13];
             Vector3 l_hand = landmarks[15];
             Vector3 l_sholder = landmarks[11];
@@ -347,28 +349,171 @@ public sealed class BlazePoseSample : MonoBehaviour
             can_check_2(landmarks);
         }
     }
+    
+    
+    private void can_check_3(Vector4[] marks)
+    {
+        float gap = (marks[12].y - marks[24].y)/3*2;
+        if(marks[24].y < marks[26].y + gap && marks[24].y > marks[26].y - gap && marks[23].y < marks[25].y + gap)
+        {
+            gap = (marks[12].x - marks[11].x)*2/5;
+            Debug.Log("다리 앉음");
+            if(marks[14].x - marks[12].x > gap && marks[11].x - marks[13].x > gap)
+            {
+                can_state = true;
+                Debug.Log("조건3 성공 활성화!");
+                Gamemanage.GetComponent<GameManage>().Start_timer(2 , 0.0f);    
+            }
+        }
+    }
     private void check_move_3(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
+        
+        if(can_state)
+        {
+            if(GameManage.minute == 0)
+            {
+                r_state = true;
+                GameManage.Now_EX_State++;
+                GameManage.minute = 1;
+                GameManage.second = 0;
+                Gamemanage.GetComponent<GameManage>().Pasue_sec(20.0f);
+            }
+
+            float gap = (landmarks[12].y - landmarks[24].y)/2;
+
+            if(r_state)
+            {
+                if(landmarks[24].y < landmarks[26].y + gap && landmarks[24].y > landmarks[26].y - gap)
+                {
+                    r_state = false;
+                    Debug.Log("앉음!");
+                }
+                
+            }
+            else
+            {
+                if(landmarks[24].y > landmarks[26].y + gap*4/3)
+                {
+                    r_state = false;
+                    Debug.Log("일어남 카운트!");
+                    GameManage.r_count++;
+                }
+            }
+        }
+        else
+        {
+            can_check_3(landmarks);
+        }
     }
+
+
     private void check_move_4(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
+
+        if(GameManage.is_time)
+        {       
+            float gap = (landmarks[12].y - landmarks[24].y)/2;
+
+            if(r_state)
+            {
+                if(landmarks[24].y < landmarks[26].y + gap && landmarks[24].y > landmarks[26].y - gap)
+                {
+                    r_state = false;
+                    Debug.Log("앉음!");
+                }
+                
+            }
+            else
+            {
+                if(landmarks[24].y > landmarks[26].y + gap*4/3)
+                {
+                    r_state = false;
+                    Debug.Log("일어남 카운트!");
+                    GameManage.r_count++;
+                }
+            }   
+        }
+        else
+        {
+            if(GameManage.minute == 0)
+            {
+                stop_check();
+            }
+        }
+    }
+
+    private void can_check_5(Vector4[] marks)
+    {
+
     }
     private void check_move_5(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
+
+        if(can_state)
+        {
+
+        }
+        else
+        {
+            can_check_5(landmarks);
+        }
+    }
+
+    private void can_check_6(Vector4[] marks)
+    {
+
     }
     private void check_move_6(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
+
+        if(can_state)
+        {
+
+        }
+        else
+        {
+            can_check_6(landmarks);
+        }
+    }
+
+    private void can_check_7(Vector4[] marks)
+    {
+
     }
     private void check_move_7(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
+
+        if(can_state)
+        {
+
+        }
+        else
+        {
+            can_check_7(landmarks);
+        }
+    }
+
+    private void can_check_8(Vector4[] marks)
+    {
+
     }
     private void check_move_8(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
+
+        if(can_state)
+        {
+
+        }
+        else
+        {
+            can_check_8(landmarks);
+        }
     }
 }

@@ -97,4 +97,18 @@ public class GameManage : MonoBehaviour
         is_time = true;
         Debug.Log("타이머 재개");   
     }
+
+    public void Pasue_sec(float sec)
+    {
+        float time = 0;
+
+        Pause_timer();
+
+        while(time < sec)
+        {
+            //time += Time.deltatime;
+        }
+
+        Restart_timer();
+    }
 }
