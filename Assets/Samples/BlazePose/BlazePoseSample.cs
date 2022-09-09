@@ -36,6 +36,30 @@ public sealed class BlazePoseSample : MonoBehaviour
     private UniTask<bool> task;
     private CancellationToken cancellationToken;
 
+    public Text upper_score_0;
+    public Text upper_score_1;
+    public Text upper_score_2;
+    public Text upper_score_3;
+
+    public Text under_score_0;
+    public Text under_score_1;
+    public Text under_score_2;
+    public Text under_score_3;
+
+    public Text walk_score_total;
+    public Text walk_score_1;
+    public Text walk_score_2;
+
+    public Text legup_score_one;
+    public Text legup_score_two;
+
+    public Text bire_score_total;
+    public Text bird_score_up;
+    public Text bird_score_side;
+
+    public Text muscle_score_hip;
+    public Text muscle_score_leg;
+
     private void Start()
     {
         
@@ -46,6 +70,8 @@ public sealed class BlazePoseSample : MonoBehaviour
         cancellationToken = this.GetCancellationTokenOnDestroy();
 
         GetComponent<WebCamInput>().OnTextureUpdate.AddListener(OnTextureUpdate);
+
+        Set_ScoreBoard(0);
     }
 
     private void OnDestroy()
@@ -171,6 +197,16 @@ public sealed class BlazePoseSample : MonoBehaviour
         } 
     }
 
+    private void Set_ScoreBoard(int n)
+    {
+        if(n == 0)
+        {
+            upper_score_0.text = DataManage.instance.UpperEX[0].ToString();
+            upper_score_1.text = DataManage.instance.UpperEX[1].ToString();
+            upper_score_2.text = DataManage.instance.UpperEX[2].ToString();
+            upper_score_3.text = DataManage.instance.UpperEX[3].ToString();
+        }
+    }
     // 첫번째 운동 움직임 체크
     private void check_move_1(PoseLandmarkDetect.Result result)
     {
@@ -212,7 +248,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                     if(r_state == true)
                     {
                         r_state = false;
-                        GameManage.r_count++;
                         Debug.Log("오른손 다운");
                     }
                 }
@@ -221,6 +256,8 @@ public sealed class BlazePoseSample : MonoBehaviour
                     if(r_state == false)
                     {
                         r_state = true;
+                        DataManage.instance.UpperEX[1]++;
+                        upper_score_1.text = DataManage.instance.UpperEX[1].ToString();
                         Debug.Log("오른손 업");
                     }
                 }
@@ -232,7 +269,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                     if(l_state == true)
                     {
                         l_state = false;
-                        GameManage.l_count++;
                         Debug.Log("왼손 다운");
                     }
                 }
@@ -241,6 +277,8 @@ public sealed class BlazePoseSample : MonoBehaviour
                     if(l_state == false)
                     {
                         l_state = true;
+                        DataManage.instance.UpperEX[0]++;
+                        upper_score_0.text =  DataManage.instance.UpperEX[0].ToString();
                         Debug.Log("왼손 업");
                     }
                 }
@@ -249,7 +287,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         else
         {
             can_check_1(landmarks);
-            Debug.Log(landmarks[10].x);
+
         }
     }
 
@@ -318,7 +356,8 @@ public sealed class BlazePoseSample : MonoBehaviour
                     {
                         r_state = true;
                         Debug.Log("팔 들어올림");
-                        GameManage.r_count++;
+                        DataManage.instance.UpperEX[3]++;
+                        upper_score_3.text = DataManage.instance.UpperEX[3].ToString();
                     }
                 }
             }
@@ -339,7 +378,8 @@ public sealed class BlazePoseSample : MonoBehaviour
                     {
                         l_state = true;
                         Debug.Log("팔 들어올림");
-                        GameManage.l_count++;
+                        DataManage.instance.UpperEX[2]++;
+                        upper_score_2.text =  DataManage.instance.UpperEX[2].ToString();
                     }
                 }
             }
@@ -398,7 +438,7 @@ public sealed class BlazePoseSample : MonoBehaviour
                 {
                     r_state = false;
                     Debug.Log("일어남 카운트!");
-                    GameManage.r_count++;
+                    DataManage.instance.UnderEX[0]++;
                 }
             }
         }
@@ -432,7 +472,7 @@ public sealed class BlazePoseSample : MonoBehaviour
                 {
                     r_state = false;
                     Debug.Log("일어남 카운트!");
-                    GameManage.r_count++;
+                    DataManage.instance.UnderEX[1]++;
                 }
             }   
         }
@@ -447,7 +487,7 @@ public sealed class BlazePoseSample : MonoBehaviour
 
     private void can_check_5(Vector4[] marks)
     {
-
+        
     }
     private void check_move_5(PoseLandmarkDetect.Result result)
     {

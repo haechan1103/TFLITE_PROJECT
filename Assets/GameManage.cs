@@ -12,14 +12,11 @@ public class GameManage : MonoBehaviour
     [SerializeField]
     public static bool can_check;
     [SerializeField]
-    public static bool r_now_state;
-    [SerializeField]
     public static bool l_now_state;
+    public static bool r_now_state;
 
     public static int Now_EX_State;
 
-    public int left_count;
-    public int right_count;
     public static bool is_time;
 
     public Text timeText;
@@ -27,11 +24,13 @@ public class GameManage : MonoBehaviour
     public static float minute;
     public static float second;
 
+    
+    
+
     // Start is called before the first frame update
     void Start()
     {
         can_check = true;
-        l_count = r_count = 0;
         Start_timer(0,20.0f);
         Now_EX_State = 1;
     }
@@ -40,8 +39,6 @@ public class GameManage : MonoBehaviour
 
     void Update()
     {
-        left_count = l_count;
-        right_count = r_count;
         time_check();
     }
 

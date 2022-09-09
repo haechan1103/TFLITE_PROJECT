@@ -19,9 +19,28 @@ public class DataManage : MonoBehaviour
     public List<int> MuscleEX = new List<int>();
 
     
-
+    void Set_Data()
+    {
+        for(int i = 0; i < 4; i++)
+        {
+            instance.UpperEX.Add(0);
+        }
+        for(int i = 0; i < 3;i++)
+        {
+            instance.UnderEX.Add(0);
+            instance.WalkEX.Add(0);
+            instance.BireEX.Add(0);
+        }
+        for(int i = 0; i < 2;i++)
+        {
+            instance.LegupEX.Add(0);
+            instance.MuscleEX.Add(0);
+        }
+    }
     void Awake()
     {
         instance = this;
+
+        Set_Data();        
     }
 }
