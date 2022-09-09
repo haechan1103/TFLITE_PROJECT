@@ -1,4 +1,6 @@
 ﻿using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using TensorFlowLite;
 using UnityEngine;
@@ -10,7 +12,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     [SerializeField]
     public BlazePose.Options options = default;
 
-    public GameObject Gamemanage;
+    public GameObject timeManage;
 
 
     [SerializeField]
@@ -29,36 +31,27 @@ public sealed class BlazePoseSample : MonoBehaviour
     
     private Vector4[] landmarks;
 
-    private bool can_state;
+    private int Ex_index;
+
 
     private bool r_state;
     private bool l_state;
     private UniTask<bool> task;
     private CancellationToken cancellationToken;
 
-    public Text upper_score_0;
-    public Text upper_score_1;
-    public Text upper_score_2;
-    public Text upper_score_3;
+    public List<Text> upper_score = new List<Text>();
 
-    public Text under_score_0;
-    public Text under_score_1;
-    public Text under_score_2;
-    public Text under_score_3;
+    public List<Text> under_score = new List<Text>();
 
-    public Text walk_score_total;
-    public Text walk_score_1;
-    public Text walk_score_2;
+    public List<Text> walk_score_total = new List<Text>();
 
-    public Text legup_score_one;
-    public Text legup_score_two;
+    public List<Text> legup_score_one = new List<Text>();
 
-    public Text bire_score_total;
-    public Text bird_score_up;
-    public Text bird_score_side;
+    public List<Text> bire_score = new List<Text>();
 
-    public Text muscle_score_hip;
-    public Text muscle_score_leg;
+    public List<Text> muscle_score_hip = new List<Text>();
+    
+    public List<GameObject> Ex_Objcet = new List<GameObject>();
 
     private void Start()
     {
@@ -72,13 +65,20 @@ public sealed class BlazePoseSample : MonoBehaviour
         GetComponent<WebCamInput>().OnTextureUpdate.AddListener(OnTextureUpdate);
 
         Set_ScoreBoard(0);
+
+        Ex_index = 0;
     }
 
-    private void OnDestroy()
+    public void Restart_check()
     {
-        GetComponent<WebCamInput>().OnTextureUpdate.RemoveListener(OnTextureUpdate);
-        pose?.Dispose();
-        drawer?.Dispose();
+        if(TimeManage.Now_EX_State%2 == 0)
+        {            
+            TimeManage.Now_EX_State--;
+        }
+        TimeManage.can_state = false;
+        TimeManage.minute = 0;
+        TimeManage.second = 0.0f;
+        timeManage.GetComponent<TimeManage>().Pause_timer();
     }
 
     private void OnTextureUpdate(Texture texture)
@@ -103,7 +103,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         if (landmarkResult != null && landmarkResult.score > 0.2f)
         {
-            switch(GameManage.Now_EX_State)
+            switch(TimeManage.Now_EX_State)
             {
                 case 1:
                     check_move_1(landmarkResult);
@@ -165,10 +165,10 @@ public sealed class BlazePoseSample : MonoBehaviour
     }
 
     // 운동 시간 종료시 함수 실행
-    private void stop_check() 
+    public void stop_check() 
     {
-        can_state = false;
-        GameManage.Now_EX_State = 0;
+        TimeManage.can_state = false;
+        TimeManage.Now_EX_State = 0;
     }
 
     // 첫번째 운동 스타트 체크
@@ -189,9 +189,9 @@ public sealed class BlazePoseSample : MonoBehaviour
                 {
                     r_state = false;
                     l_state = false;
-                    can_state = true;
+                    TimeManage.can_state = true;
                     Debug.Log("조건 성공 활성화");
-                    Gamemanage.GetComponent<GameManage>().Start_timer(3 , 30.0f);
+                    timeManage.GetComponent<TimeManage>().Start_timer(3 , 30.0f);
                 }
             }
         } 
@@ -199,12 +199,13 @@ public sealed class BlazePoseSample : MonoBehaviour
 
     private void Set_ScoreBoard(int n)
     {
-        if(n == 0)
+        if(n == 1)
         {
-            upper_score_0.text = DataManage.instance.UpperEX[0].ToString();
-            upper_score_1.text = DataManage.instance.UpperEX[1].ToString();
-            upper_score_2.text = DataManage.instance.UpperEX[2].ToString();
-            upper_score_3.text = DataManage.instance.UpperEX[3].ToString();
+            
+        }
+        else if(n == 3)
+        {
+            
         }
     }
     // 첫번째 운동 움직임 체크
@@ -212,21 +213,21 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(can_state)
+        if(TimeManage.can_state)
         {
-            if(!GameManage.is_time)
+            if(!TimeManage.is_time)
             {
-                can_state = false;
-                Gamemanage.GetComponent<GameManage>().Pause_timer();
+                TimeManage.can_state = false;
+                timeManage.GetComponent<TimeManage>().Pause_timer();
             }
 
-            if(GameManage.minute < 3)
+            if(TimeManage.minute < 3)
             {
-                GameManage.Now_EX_State++;
-                can_state = false;
-                GameManage.minute = 3;
-                GameManage.second = 0.0f;
-                Gamemanage.GetComponent<GameManage>().Pause_timer();
+                TimeManage.Now_EX_State++;
+                TimeManage.can_state = false;
+                TimeManage.minute = 3;
+                TimeManage.second = 0.0f;
+                timeManage.GetComponent<TimeManage>().Pause_timer();
             }
 
             float r_gap, l_gap;
@@ -257,7 +258,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                     {
                         r_state = true;
                         DataManage.instance.UpperEX[1]++;
-                        upper_score_1.text = DataManage.instance.UpperEX[1].ToString();
                         Debug.Log("오른손 업");
                     }
                 }
@@ -278,7 +278,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                     {
                         l_state = true;
                         DataManage.instance.UpperEX[0]++;
-                        upper_score_0.text =  DataManage.instance.UpperEX[0].ToString();
                         Debug.Log("왼손 업");
                     }
                 }
@@ -309,9 +308,9 @@ public sealed class BlazePoseSample : MonoBehaviour
                 {
                     r_state = false;
                     l_state = false;
-                    can_state = true;
+                    TimeManage.can_state = true;
                     Debug.Log("조건 성공 활성화");
-                    Gamemanage.GetComponent<GameManage>().Restart_timer();
+                    timeManage.GetComponent<TimeManage>().Restart_timer();
                 }
             }
         } 
@@ -322,9 +321,9 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(can_state)
+        if(TimeManage.can_state)
         {
-            if(!GameManage.is_time)
+            if(!TimeManage.is_time)
             {
                 stop_check();
             }
@@ -356,8 +355,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                     {
                         r_state = true;
                         Debug.Log("팔 들어올림");
-                        DataManage.instance.UpperEX[3]++;
-                        upper_score_3.text = DataManage.instance.UpperEX[3].ToString();
                     }
                 }
             }
@@ -379,7 +376,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                         l_state = true;
                         Debug.Log("팔 들어올림");
                         DataManage.instance.UpperEX[2]++;
-                        upper_score_2.text =  DataManage.instance.UpperEX[2].ToString();
                     }
                 }
             }
@@ -400,9 +396,22 @@ public sealed class BlazePoseSample : MonoBehaviour
             Debug.Log("다리 앉음");
             if(marks[14].x - marks[12].x > gap && marks[11].x - marks[13].x > gap)
             {
-                can_state = true;
+                if(DataManage.instance.UnderEX.Count == 0)
+                {
+                    DataManage.instance.UnderEX[0] = 0;
+                    DataManage.instance.UnderEX[1] = 0;
+                    DataManage.instance.UnderEX[2] = 0;
+                }
+                else
+                {
+                    for(int i = 0; i < 3; i++)
+                    {
+                        DataManage.instance.UnderEX.Add(0);
+                    }
+                }
+                TimeManage.can_state = true;
                 Debug.Log("조건3 성공 활성화!");
-                Gamemanage.GetComponent<GameManage>().Start_timer(2 , 0.0f);    
+                timeManage.GetComponent<TimeManage>().Start_timer(2 , 0.0f);    
             }
         }
     }
@@ -410,15 +419,15 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
         
-        if(can_state)
+        if(TimeManage.can_state)
         {
-            if(GameManage.minute == 0)
+            if(TimeManage.minute == 0)
             {
                 r_state = true;
-                GameManage.Now_EX_State++;
-                GameManage.minute = 1;
-                GameManage.second = 0;
-                Gamemanage.GetComponent<GameManage>().Pasue_sec(20.0f);
+                TimeManage.Now_EX_State++;
+                TimeManage.minute = 1;
+                TimeManage.second = 0;
+                timeManage.GetComponent<TimeManage>().Pasue_sec(20.0f);
             }
 
             float gap = (landmarks[12].y - landmarks[24].y)/2;
@@ -453,7 +462,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(GameManage.is_time)
+        if(TimeManage.is_time)
         {       
             float gap = (landmarks[12].y - landmarks[24].y)/2;
 
@@ -478,7 +487,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
         else
         {
-            if(GameManage.minute == 0)
+            if(TimeManage.minute == 0)
             {
                 stop_check();
             }
@@ -493,7 +502,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(can_state)
+        if(TimeManage.can_state)
         {
 
         }
@@ -511,7 +520,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(can_state)
+        if(TimeManage.can_state)
         {
 
         }
@@ -529,7 +538,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(can_state)
+        if(TimeManage.can_state)
         {
 
         }
@@ -547,7 +556,7 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         landmarks = result.viewportLandmarks;
 
-        if(can_state)
+        if(TimeManage.can_state)
         {
 
         }
@@ -555,5 +564,48 @@ public sealed class BlazePoseSample : MonoBehaviour
         {
             can_check_8(landmarks);
         }
+    }
+
+    public void Part1_Start()
+    {
+        TimeManage.Now_EX_State = 1;
+        Ex_Objcet[Ex_index].SetActive(false);
+        Ex_Objcet[0].SetActive(true);
+        Ex_index = 0;
+    }
+    public void Part2_Start()
+    {
+        TimeManage.Now_EX_State = 3;
+        Ex_Objcet[Ex_index].SetActive(false);
+        Ex_Objcet[1].SetActive(true);
+        Ex_index = 1;
+    }
+    public void Part3_Start()
+    {
+        TimeManage.Now_EX_State = 5;
+        Ex_Objcet[Ex_index].SetActive(false);
+        Ex_Objcet[2].SetActive(true);
+        Ex_index = 2;
+    }
+    public void Part4_Start()
+    {
+        TimeManage.Now_EX_State = 7;
+        Ex_Objcet[Ex_index].SetActive(false);
+        Ex_Objcet[3].SetActive(true);
+        Ex_index = 3;
+    }
+    public void Part5_Start()
+    {
+        TimeManage.Now_EX_State = 9;
+        Ex_Objcet[Ex_index].SetActive(false);
+        Ex_Objcet[4].SetActive(true);
+        Ex_index = 4;
+    }
+    public void Part6_Start()
+    {
+        TimeManage.Now_EX_State = 11;
+        Ex_Objcet[Ex_index].SetActive(false);
+        Ex_Objcet[5].SetActive(true);
+        Ex_index = 5;
     }
 }

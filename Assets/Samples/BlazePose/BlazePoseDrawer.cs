@@ -74,51 +74,7 @@ namespace TensorFlowLite
             draw.color = Color.blue;
 
             Vector4[] landmarks = result.viewportLandmarks;
-
-            Vector3 r_sholder = camera.ViewportToWorldPoint(landmarks[12]);
-            Vector3 r_hand = camera.ViewportToWorldPoint(landmarks[20]);
-            Vector3 l_sholder = camera.ViewportToWorldPoint(landmarks[11]);
-            Vector3 l_hand = camera.ViewportToWorldPoint(landmarks[19]);
-
-            if(r_hand.y < r_sholder.y)
-            {
-                if(GameManage.r_now_state == true)
-                {
-                    GameManage.r_now_state = false;
-                    GameManage.r_count++;
-                    Debug.Log("오른손 다운");
-                }
-            }
-            else
-            {
-                if(GameManage.r_now_state == false)
-                {
-                    GameManage.r_now_state = true;
-                    GameManage.r_count++;
-                    Debug.Log("오른손 업");
-                }
-            }
-
-            if(l_hand.y < l_sholder.y)
-            {
-                if(GameManage.l_now_state == true)
-                {
-                    GameManage.l_now_state = false;
-                    GameManage.l_count++;
-                    Debug.Log("왼손 다운");
-                    Debug.Log(l_hand.y);
-                }
-            }
-            else
-            {
-                if(GameManage.l_now_state == false)
-                {
-                    GameManage.l_now_state = true;
-                    GameManage.l_count++;
-                    Debug.Log("왼손 업");
-                }
-            }
-            
+           
             // Update world joints
             for (int i = 0; i < landmarks.Length; i++)
             {

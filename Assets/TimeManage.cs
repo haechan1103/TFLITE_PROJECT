@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManage : MonoBehaviour
+public class TimeManage : MonoBehaviour
 {
     [SerializeField]
     public static int l_count;
@@ -16,6 +16,8 @@ public class GameManage : MonoBehaviour
     public static bool r_now_state;
 
     public static int Now_EX_State;
+
+    public static bool can_state;
 
     public static bool is_time;
 
@@ -31,8 +33,7 @@ public class GameManage : MonoBehaviour
     void Start()
     {
         can_check = true;
-        Start_timer(0,20.0f);
-        Now_EX_State = 1;
+        can_state = false;
     }
 
     // Update is called once per fram
