@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -67,6 +68,8 @@ public sealed class BlazePoseSample : MonoBehaviour
         Set_ScoreBoard(0);
 
         Ex_index = 0;
+
+        TimeManage.can_state = false;
     }
 
     public void Restart_check()
@@ -75,10 +78,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         {            
             TimeManage.Now_EX_State--;
         }
-        TimeManage.can_state = false;
-        TimeManage.minute = 0;
-        TimeManage.second = 0.0f;
-        timeManage.GetComponent<TimeManage>().Pause_timer();
+        timeManage.GetComponent<TimeManage>().lnit_timer();
     }
 
     private void OnTextureUpdate(Texture texture)
@@ -96,7 +96,37 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
     }
 
-    
+    private float Calcul_angle(Vector3 p1, Vector3 p2, Vector3 p3)
+    {
+        List<float> x = new List<float>();
+        List<float> y = new List<float>();
+
+        x.Add((float)p1.x);
+        x.Add((float)p2.x);
+        x.Add((float)p3.x);
+        y.Add((float)p1.y);
+        y.Add((float)p2.y);
+        y.Add((float)p3.y);
+
+        Vector3 V1 = new Vector3();
+        Vector3 V2 = new Vector3();
+
+        V1.z = V2.z = 0;
+        V1.x = x[0] - x[1];
+        V1.y = y[0] - y[1];
+        V1.x = V1.x / (float)Math.Sqrt(V1.x * V1.x + V1.y * V1.y);
+        V1.y = V1.y / (float)Math.Sqrt(V1.x * V1.x + V1.y * V1.y);
+        V2.x = x[2] - x[1];
+        V2.y = y[2] - y[1];
+        V2.x = V2.x / (float)Math.Sqrt(V2.x * V2.x + V2.y * V2.y);
+        V2.y = V2.y / (float)Math.Sqrt(V2.x * V2.x + V2.y * V2.y);
+
+        float seta = Mathf.Acos(Vector3.Dot(V1, V2));
+
+        
+
+        return seta*180/3.141592f;
+    }
 
     
     private void Update()
@@ -175,25 +205,32 @@ public sealed class BlazePoseSample : MonoBehaviour
     private void can_check_1(Vector4[] marks)
     {
         float l_gap, r_gap, gap;
-
-        gap = (marks[12].x - marks[11].x)/3;
+        Debug.Log(marks[16].z);
+        gap = (marks[12].x - marks[11].x)/2;
         if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x + gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
         && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x + gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
         {
             Debug.Log("x값 맞음");
-            l_gap = (marks[11].y - marks[13].y)*2/3;
-            r_gap = (marks[12].y - marks[14].y)*2/3;
-            if(l_gap > 0 && r_gap > 0)
+    
+            if(DataManage.instance.UnderEX.Count == 0)
             {
-                if(marks[15].y < marks[13].y - l_gap && marks[16].y < marks[14].y - r_gap)
-                {
-                    r_state = false;
-                    l_state = false;
-                    TimeManage.can_state = true;
-                    Debug.Log("조건 성공 활성화");
-                    timeManage.GetComponent<TimeManage>().Start_timer(3 , 30.0f);
-                }
+                DataManage.instance.UnderEX.Add(0);
+                DataManage.instance.UnderEX.Add(0);
+                DataManage.instance.UnderEX.Add(0);
             }
+            else
+            {
+                for(int i = 0; i < 3; i++)
+                {
+                    DataManage.instance.UnderEX[i] = 0;
+                }
+            }   
+            Set_ScoreBoard(TimeManage.Now_EX_State);
+            r_state = false;
+            l_state = false;
+            TimeManage.can_state = true;
+            Debug.Log("조건 성공 활성화");
+            timeManage.GetComponent<TimeManage>().Start_timer(4 , 30.0f);
         } 
     }
 
@@ -201,11 +238,17 @@ public sealed class BlazePoseSample : MonoBehaviour
     {
         if(n == 1)
         {
-            
+            for(int i = 0; i < 4; i++)
+            {
+                upper_score[i].text = DataManage.instance.UpperEX[i].ToString();
+            }
         }
         else if(n == 3)
         {
-            
+            for(int i = 0; i < 3; i++)
+            {
+                under_score[i].text = DataManage.instance.UnderEX[i].ToString();
+            }
         }
     }
     // 첫번째 운동 움직임 체크
@@ -230,56 +273,47 @@ public sealed class BlazePoseSample : MonoBehaviour
                 timeManage.GetComponent<TimeManage>().Pause_timer();
             }
 
-            float r_gap, l_gap;
-
             landmarks = result.viewportLandmarks;
-            
-            r_gap = landmarks[12].y - landmarks[14].y;
-            l_gap = landmarks[11].y - landmarks[13].y;
-            
-            Vector3 r_arm = landmarks[14];
-            Vector3 r_hand = landmarks[16];
-            
-            Vector3 l_arm = landmarks[13];
-            Vector3 l_hand = landmarks[15];
 
-            if(r_gap > 0)
-                if(r_hand.y < r_arm.y - r_gap/3*2)
-                {
-                    if(r_state == true)
-                    {
-                        r_state = false;
-                        Debug.Log("오른손 다운");
-                    }
-                }
-                else if(r_hand.y > r_arm.y + r_gap/2)
-                {
-                    if(r_state == false)
-                    {
-                        r_state = true;
-                        DataManage.instance.UpperEX[1]++;
-                        Debug.Log("오른손 업");
-                    }
-                }
+            float seta_r = Calcul_angle(landmarks[12], landmarks[14], landmarks[16]);
+            float seta_l = Calcul_angle(landmarks[11], landmarks[13], landmarks[15]);
 
-            if(l_gap > 0)
+            Debug.Log(seta_r);
+            if(seta_r > 100)
             {
-                if(l_hand.y < l_arm.y - l_gap/3*2)
+                if(r_state == true)
                 {
-                    if(l_state == true)
-                    {
-                        l_state = false;
-                        Debug.Log("왼손 다운");
-                    }
+                    r_state = false;
+                    Debug.Log("오른손 다운");
                 }
-                else if(l_hand.y > l_arm.y + l_gap/3*2)
+            }
+            else if(seta_r < 35)
+            {
+                if(r_state == false)
                 {
-                    if(l_state == false)
-                    {
-                        l_state = true;
-                        DataManage.instance.UpperEX[0]++;
-                        Debug.Log("왼손 업");
-                    }
+                    r_state = true;
+                    DataManage.instance.UpperEX[1]++;
+                    upper_score[1].text = DataManage.instance.UpperEX[1].ToString();
+                    Debug.Log("오른손 업");
+                }
+            }
+
+            if(seta_l > 100)
+            {
+                if(l_state == true)
+                {
+                    l_state = false;
+                    Debug.Log("왼손 다운");
+                }
+            }
+            else if(seta_l < 35)
+            {
+                if(l_state == false)
+                {
+                    l_state = true;
+                    DataManage.instance.UpperEX[0]++;
+                    upper_score[0].text = DataManage.instance.UpperEX[0].ToString();
+                    Debug.Log("왼손 업");
                 }
             }
         }
@@ -398,17 +432,18 @@ public sealed class BlazePoseSample : MonoBehaviour
             {
                 if(DataManage.instance.UnderEX.Count == 0)
                 {
-                    DataManage.instance.UnderEX[0] = 0;
-                    DataManage.instance.UnderEX[1] = 0;
-                    DataManage.instance.UnderEX[2] = 0;
+                    DataManage.instance.UnderEX.Add(0);
+                    DataManage.instance.UnderEX.Add(0);
+                    DataManage.instance.UnderEX.Add(0);
                 }
                 else
                 {
                     for(int i = 0; i < 3; i++)
                     {
-                        DataManage.instance.UnderEX.Add(0);
+                        DataManage.instance.UnderEX[i] = 0;
                     }
                 }
+                r_state = false;
                 TimeManage.can_state = true;
                 Debug.Log("조건3 성공 활성화!");
                 timeManage.GetComponent<TimeManage>().Start_timer(2 , 0.0f);    
@@ -496,7 +531,33 @@ public sealed class BlazePoseSample : MonoBehaviour
 
     private void can_check_5(Vector4[] marks)
     {
-        
+        float gap = marks[12].x - marks[11].x;
+
+        if(marks[16].x > marks[14].x + gap && marks[15].x < marks[11].x - gap)
+        {
+            Debug.Log("팔 벌림!");
+            if(true)
+            {
+                if(DataManage.instance.UnderEX.Count == 0)
+                {
+                    DataManage.instance.WalkEX.Add(0);
+                    DataManage.instance.WalkEX.Add(0);
+                    DataManage.instance.WalkEX.Add(0);
+                }
+                else
+                {
+                    for(int i = 0; i < 3; i++)
+                    {
+                        DataManage.instance.UnderEX[i] = 0;
+                    }
+                }
+                Set_ScoreBoard(5);
+                r_state = false;
+                l_state = false;
+                Debug.Log("조건3 성공 활성화!");
+                timeManage.GetComponent<TimeManage>().Start_timer(4 , 0.0f);
+            }
+        }
     }
     private void check_move_5(PoseLandmarkDetect.Result result)
     {
@@ -572,6 +633,8 @@ public sealed class BlazePoseSample : MonoBehaviour
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[0].SetActive(true);
         Ex_index = 0;
+        timeManage.GetComponent<TimeManage>().lnit_timer();
+        
     }
     public void Part2_Start()
     {
@@ -579,6 +642,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[1].SetActive(true);
         Ex_index = 1;
+        timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part3_Start()
     {
@@ -586,6 +650,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[2].SetActive(true);
         Ex_index = 2;
+        timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part4_Start()
     {
@@ -593,6 +658,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[3].SetActive(true);
         Ex_index = 3;
+        timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part5_Start()
     {
@@ -600,6 +666,7 @@ public sealed class BlazePoseSample : MonoBehaviour
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[4].SetActive(true);
         Ex_index = 4;
+        timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part6_Start()
     {
@@ -607,5 +674,6 @@ public sealed class BlazePoseSample : MonoBehaviour
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[5].SetActive(true);
         Ex_index = 5;
+        timeManage.GetComponent<TimeManage>().lnit_timer();
     }
 }

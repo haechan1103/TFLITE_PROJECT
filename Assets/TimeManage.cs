@@ -109,4 +109,12 @@ public class TimeManage : MonoBehaviour
 
         Restart_timer();
     }
+
+    public void lnit_timer()
+    {
+        minute = 0;
+        second = 0.0f;
+        timeText.text = minute.ToString() + ":" + ((int)second).ToString();
+        is_time = false;
+    }
 }
