@@ -65,8 +65,6 @@ public sealed class BlazePoseSample : MonoBehaviour
 
         GetComponent<WebCamInput>().OnTextureUpdate.AddListener(OnTextureUpdate);
 
-        Set_ScoreBoard(0);
-
         Ex_index = 0;
 
         TimeManage.can_state = false;
@@ -159,7 +157,18 @@ public sealed class BlazePoseSample : MonoBehaviour
                 case 8:
                     check_move_8(landmarkResult);
                     break;
-                
+                case 9:
+                    check_move_9(landmarkResult);
+                    break;
+                case 10:
+                    check_move_10(landmarkResult);
+                    break;
+                case 11:
+                    check_move_11(landmarkResult);
+                    break;
+                case 12:
+                    check_move_12(landmarkResult);
+                    break;
             }
             
         }
@@ -204,33 +213,16 @@ public sealed class BlazePoseSample : MonoBehaviour
     // 첫번째 운동 스타트 체크
     private void can_check_1(Vector4[] marks)
     {
-        float l_gap, r_gap, gap;
-        Debug.Log(marks[16].z);
-        gap = (marks[12].x - marks[11].x)/2;
-        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x + gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
-        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x + gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
-        {
-            Debug.Log("x값 맞음");
-    
-            if(DataManage.instance.UnderEX.Count == 0)
-            {
-                DataManage.instance.UnderEX.Add(0);
-                DataManage.instance.UnderEX.Add(0);
-                DataManage.instance.UnderEX.Add(0);
-            }
-            else
-            {
-                for(int i = 0; i < 3; i++)
-                {
-                    DataManage.instance.UnderEX[i] = 0;
-                }
-            }   
-            Set_ScoreBoard(TimeManage.Now_EX_State);
+        float seta_r = Calcul_angle(marks[24],marks[12],marks[14]);
+        float seta_l = Calcul_angle(marks[23],marks[11],marks[13]);
+
+        if(seta_l > 60 && seta_r > 60)
+        {  
             r_state = false;
             l_state = false;
             TimeManage.can_state = true;
             Debug.Log("조건 성공 활성화");
-            timeManage.GetComponent<TimeManage>().Start_timer(4 , 30.0f);
+            timeManage.GetComponent<TimeManage>().Start_timer(6 , 0.0f);
         } 
     }
 
@@ -272,8 +264,6 @@ public sealed class BlazePoseSample : MonoBehaviour
                 TimeManage.second = 0.0f;
                 timeManage.GetComponent<TimeManage>().Pause_timer();
             }
-
-            landmarks = result.viewportLandmarks;
 
             float seta_r = Calcul_angle(landmarks[12], landmarks[14], landmarks[16]);
             float seta_l = Calcul_angle(landmarks[11], landmarks[13], landmarks[15]);
@@ -327,26 +317,16 @@ public sealed class BlazePoseSample : MonoBehaviour
     // 두번째 운동 스타트 체크
     private void can_check_2(Vector4[] marks)
     {
-       float l_gap, r_gap, gap;
+        float seta_r = Calcul_angle(marks[24],marks[12],marks[14]);
+        float seta_l = Calcul_angle(marks[23],marks[11],marks[13]);
 
-        gap = (marks[12].x - marks[11].x)/3;
-        if(marks[14].x > marks[12].x - gap && marks[14].x < marks[12].x + gap && marks[16].x > marks[12].x-gap && marks[16].x < marks[12].x + gap
-        && marks[13].x > marks[11].x - gap && marks[13].x < marks[11].x + gap && marks[15].x > marks[11].x-gap && marks[15].x < marks[11].x + gap)
+        if(seta_l > 60 && seta_r > 60)
         {
-            Debug.Log("x값 맞음");
-            l_gap = (marks[11].y - marks[13].y)*2/3;
-            r_gap = (marks[12].y - marks[14].y)*2/3;
-            if(l_gap > 0 && r_gap > 0)
-            {
-                if(marks[15].y < marks[13].y - l_gap && marks[16].y < marks[14].y - r_gap)
-                {
-                    r_state = false;
-                    l_state = false;
-                    TimeManage.can_state = true;
-                    Debug.Log("조건 성공 활성화");
-                    timeManage.GetComponent<TimeManage>().Restart_timer();
-                }
-            }
+            r_state = false;
+            l_state = false;
+            TimeManage.can_state = true;
+            Debug.Log("조건 성공 활성화");
+            timeManage.GetComponent<TimeManage>().Restart_timer();
         } 
     }
     
@@ -423,26 +403,14 @@ public sealed class BlazePoseSample : MonoBehaviour
     
     private void can_check_3(Vector4[] marks)
     {
-        float gap = (marks[12].y - marks[24].y)/3*2;
-        if(marks[24].y < marks[26].y + gap && marks[24].y > marks[26].y - gap && marks[23].y < marks[25].y + gap)
+        float gap = (marks[12].y - marks[24].y)/2;
+        if(marks[24].y < marks[26].y + gap  && marks[23].y < marks[25].y + gap)
         {
-            gap = (marks[12].x - marks[11].x)*2/5;
+            float seta_r = Calcul_angle(marks[24],marks[12],marks[14]);
+            float seta_l = Calcul_angle(marks[23],marks[11],marks[13]);
             Debug.Log("다리 앉음");
-            if(marks[14].x - marks[12].x > gap && marks[11].x - marks[13].x > gap)
+            if(seta_l > 60 && seta_r > 60)
             {
-                if(DataManage.instance.UnderEX.Count == 0)
-                {
-                    DataManage.instance.UnderEX.Add(0);
-                    DataManage.instance.UnderEX.Add(0);
-                    DataManage.instance.UnderEX.Add(0);
-                }
-                else
-                {
-                    for(int i = 0; i < 3; i++)
-                    {
-                        DataManage.instance.UnderEX[i] = 0;
-                    }
-                }
                 r_state = false;
                 TimeManage.can_state = true;
                 Debug.Log("조건3 성공 활성화!");
@@ -480,9 +448,12 @@ public sealed class BlazePoseSample : MonoBehaviour
             {
                 if(landmarks[24].y > landmarks[26].y + gap*4/3)
                 {
-                    r_state = false;
+                    r_state = true;
                     Debug.Log("일어남 카운트!");
                     DataManage.instance.UnderEX[0]++;
+                    DataManage.instance.UnderEX[1]++;
+                    under_score[0].text = DataManage.instance.UnderEX[0].ToString();
+                    under_score[1].text = DataManage.instance.UnderEX[1].ToString();
                 }
             }
         }
@@ -499,11 +470,11 @@ public sealed class BlazePoseSample : MonoBehaviour
 
         if(TimeManage.is_time)
         {       
-            float gap = (landmarks[12].y - landmarks[24].y)/2;
+            float seta = Calcul_angle(landmarks[24], landmarks[26], landmarks[28]);
 
             if(r_state)
             {
-                if(landmarks[24].y < landmarks[26].y + gap && landmarks[24].y > landmarks[26].y - gap)
+                if(seta < 100)
                 {
                     r_state = false;
                     Debug.Log("앉음!");
@@ -512,11 +483,14 @@ public sealed class BlazePoseSample : MonoBehaviour
             }
             else
             {
-                if(landmarks[24].y > landmarks[26].y + gap*4/3)
+                if(seta > 140)
                 {
                     r_state = false;
                     Debug.Log("일어남 카운트!");
-                    DataManage.instance.UnderEX[1]++;
+                    DataManage.instance.UnderEX[0]++;
+                    DataManage.instance.UnderEX[2]++;
+                    under_score[0].text = DataManage.instance.UnderEX[0].ToString();
+                    under_score[2].text = DataManage.instance.UnderEX[2].ToString();
                 }
             }   
         }
@@ -531,33 +505,17 @@ public sealed class BlazePoseSample : MonoBehaviour
 
     private void can_check_5(Vector4[] marks)
     {
-        float gap = marks[12].x - marks[11].x;
+        float seta_r = Calcul_angle(marks[24],marks[12],marks[14]);
+        float seta_l = Calcul_angle(marks[23],marks[11],marks[13]);
 
-        if(marks[16].x > marks[14].x + gap && marks[15].x < marks[11].x - gap)
+        if(seta_l > 60 && seta_r > 60)
         {
-            Debug.Log("팔 벌림!");
-            if(true)
-            {
-                if(DataManage.instance.UnderEX.Count == 0)
-                {
-                    DataManage.instance.WalkEX.Add(0);
-                    DataManage.instance.WalkEX.Add(0);
-                    DataManage.instance.WalkEX.Add(0);
-                }
-                else
-                {
-                    for(int i = 0; i < 3; i++)
-                    {
-                        DataManage.instance.UnderEX[i] = 0;
-                    }
-                }
-                Set_ScoreBoard(5);
-                r_state = false;
-                l_state = false;
-                Debug.Log("조건3 성공 활성화!");
-                timeManage.GetComponent<TimeManage>().Start_timer(4 , 0.0f);
-            }
-        }
+            r_state = false;
+            l_state = false;
+            TimeManage.can_state = true;
+            Debug.Log("조건 성공 활성화");
+            timeManage.GetComponent<TimeManage>().Start_timer(4 , 0.0f);
+        } 
     }
     private void check_move_5(PoseLandmarkDetect.Result result)
     {
@@ -565,8 +523,38 @@ public sealed class BlazePoseSample : MonoBehaviour
 
         if(TimeManage.can_state)
         {
+            if(TimeManage.minute < 2)
+            {
+                TimeManage.minute = 2;
+                TimeManage.second = 0.0f;
+                TimeManage.Now_EX_State++;
+                TimeManage.can_state = false;
+                timeManage.GetComponent<TimeManage>().Pause_timer();
+            }
 
-        }
+            float gap = (landmarks[25].y - landmarks[27].y)/3;
+
+            if(r_state)
+            {
+                if(landmarks[26].y + gap < landmarks[25].y)
+                {
+                    r_state = false;
+                    Debug.Log("왼발 들어올림");
+                }
+            }   
+            else
+            {
+                if(landmarks[25].y + gap < landmarks[26].y)
+                {
+                    r_state = true;
+                    DataManage.instance.WalkEX[0]++;
+                    DataManage.instance.WalkEX[1]++;
+                    walk_score_total[0].text = DataManage.instance.WalkEX[0].ToString();
+                    walk_score_total[1].text = DataManage.instance.WalkEX[1].ToString();
+                    Debug.Log("오른발 들어올림");
+                }
+            }         
+        }   
         else
         {
             can_check_5(landmarks);
@@ -575,7 +563,14 @@ public sealed class BlazePoseSample : MonoBehaviour
 
     private void can_check_6(Vector4[] marks)
     {
-
+        if(marks[14].y > marks[10].y)
+        {
+            TimeManage.can_state = true;
+            timeManage.GetComponent<TimeManage>().Restart_timer();
+            r_state = false;
+            l_state = false;
+            Debug.Log("조건 활성화!");
+        }
     }
     private void check_move_6(PoseLandmarkDetect.Result result)
     {
@@ -583,7 +578,20 @@ public sealed class BlazePoseSample : MonoBehaviour
 
         if(TimeManage.can_state)
         {
+            if(TimeManage.is_time == false)
+            {
+                stop_check();
+            }
+            
+            if(r_state)
+            {
 
+            }
+            else
+            {
+
+            }
+            
         }
         else
         {
@@ -593,7 +601,15 @@ public sealed class BlazePoseSample : MonoBehaviour
 
     private void can_check_7(Vector4[] marks)
     {
-
+        if(marks[14].y > marks[10].y)
+        {
+            TimeManage.can_state = true;
+            timeManage.GetComponent<TimeManage>().Start_timer(8,0.0f);
+            r_state = false;
+            l_state = false;
+            Debug.Log("조건 활성화!");
+            TimeManage.can_check = false;
+        }
     }
     private void check_move_7(PoseLandmarkDetect.Result result)
     {
@@ -601,7 +617,59 @@ public sealed class BlazePoseSample : MonoBehaviour
 
         if(TimeManage.can_state)
         {
+            if(TimeManage.minute < 4)
+            {
+                TimeManage.Now_EX_State++;
+                r_state = false;
+            }
+            
+            if(TimeManage.can_check)
+            {
+                float seta_l = Calcul_angle(landmarks[23], landmarks[25], landmarks[27]);
+                
+                if(l_state)
+                {
+                    if(seta_l < 90)
+                    {
+                        l_state = false;
+                        Debug.Log("왼발 내림");
+                        TimeManage.can_check = false;
+                        DataManage.instance.LegupEX[0]++;
+                        legup_score_one[0].text = DataManage.instance.LegupEX[0].ToString();
+                    }
+                }
+                else
+                {
+                    if(seta_l > 105)
+                    {
+                        l_state = true;
+                        Debug.Log("왼발 올림");
+                    }
+                }
+            }
+            else
+            {
+                float seta_r = Calcul_angle(landmarks[24], landmarks[26], landmarks[28]);
 
+                Debug.Log(seta_r);
+                if(r_state)
+                {
+                    if(seta_r < 90)
+                    {
+                        r_state = false;
+                        Debug.Log("오른발 내림");
+                        TimeManage.can_check = true;
+                    }
+                }
+                else
+                {
+                    if(seta_r > 105)
+                    {
+                        r_state = true;
+                        Debug.Log("오른발 올림");
+                    }
+                }
+            }
         }
         else
         {
@@ -609,11 +677,34 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
     }
 
-    private void can_check_8(Vector4[] marks)
-    {
-
-    }
     private void check_move_8(PoseLandmarkDetect.Result result)
+    {
+        landmarks = result.viewportLandmarks;
+
+        float seta_l = Calcul_angle(landmarks[23], landmarks[25], landmarks[27]);
+        float seta_r = Calcul_angle(landmarks[24], landmarks[26], landmarks[28]);
+
+        if(r_state)
+        {
+            if(seta_l < 90 && seta_r < 90)
+            {
+                Debug.Log("다리 내림");
+                r_state = false;
+                DataManage.instance.LegupEX[1]++;
+                legup_score_one[1].text = DataManage.instance.LegupEX[1].ToString();
+            }
+        }
+        else
+        {
+            if(seta_l > 105 && seta_r > 105)
+            {
+                Debug.Log("다리 올림");
+                r_state = true;
+            }
+        }
+    }
+
+    private void check_move_9(PoseLandmarkDetect.Result result)
     {
         landmarks = result.viewportLandmarks;
 
@@ -623,57 +714,105 @@ public sealed class BlazePoseSample : MonoBehaviour
         }
         else
         {
-            can_check_8(landmarks);
+            
         }
     }
+    private void check_move_10(PoseLandmarkDetect.Result result)
+    {
+        landmarks = result.viewportLandmarks;
 
+        if(TimeManage.can_state)
+        {
+
+        }
+        else
+        {
+        }
+    }
+    private void check_move_11(PoseLandmarkDetect.Result result)
+    {
+        landmarks = result.viewportLandmarks;
+
+        if(TimeManage.can_state)
+        {
+
+        }
+        else
+        {
+            
+        }
+    }private void check_move_12(PoseLandmarkDetect.Result result)
+    {
+        landmarks = result.viewportLandmarks;
+
+        if(TimeManage.can_state)
+        {
+
+        }
+        else
+        {
+            
+        }
+    }
     public void Part1_Start()
     {
         TimeManage.Now_EX_State = 1;
+        TimeManage.can_state = false;
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[0].SetActive(true);
         Ex_index = 0;
+        Set_ScoreBoard(TimeManage.Now_EX_State);
         timeManage.GetComponent<TimeManage>().lnit_timer();
         
     }
     public void Part2_Start()
     {
         TimeManage.Now_EX_State = 3;
+        TimeManage.can_state = false;
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[1].SetActive(true);
         Ex_index = 1;
+        Set_ScoreBoard(TimeManage.Now_EX_State);
         timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part3_Start()
     {
         TimeManage.Now_EX_State = 5;
+        TimeManage.can_state = false;
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[2].SetActive(true);
         Ex_index = 2;
+        Set_ScoreBoard(TimeManage.Now_EX_State);
         timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part4_Start()
     {
         TimeManage.Now_EX_State = 7;
+        TimeManage.can_state = false;
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[3].SetActive(true);
         Ex_index = 3;
+        Set_ScoreBoard(TimeManage.Now_EX_State);
         timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part5_Start()
     {
         TimeManage.Now_EX_State = 9;
+        TimeManage.can_state = false;
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[4].SetActive(true);
         Ex_index = 4;
+        Set_ScoreBoard(TimeManage.Now_EX_State);
         timeManage.GetComponent<TimeManage>().lnit_timer();
     }
     public void Part6_Start()
     {
         TimeManage.Now_EX_State = 11;
+        TimeManage.can_state = false;
         Ex_Objcet[Ex_index].SetActive(false);
         Ex_Objcet[5].SetActive(true);
         Ex_index = 5;
+        Set_ScoreBoard(TimeManage.Now_EX_State);
         timeManage.GetComponent<TimeManage>().lnit_timer();
     }
 }

@@ -32,7 +32,6 @@ public class TimeManage : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        can_check = true;
         can_state = false;
     }
 
@@ -116,5 +115,6 @@ public class TimeManage : MonoBehaviour
         second = 0.0f;
         timeText.text = minute.ToString() + ":" + ((int)second).ToString();
         is_time = false;
+        can_state = false;
     }
 }
